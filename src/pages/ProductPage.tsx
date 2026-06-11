@@ -16,6 +16,40 @@ const CONDITION_STYLES: Record<string, string> = {
   "б/у": "bg-zinc-100 text-zinc-600",
 };
 
+function StarRating({ rating, size = 14 }: { rating: number; size?: number }) {
+  return (
+    <div className="flex items-center gap-0.5">
+      {[1, 2, 3, 4, 5].map((star) => {
+        const filled = rating >= star;
+        const half = !filled && rating >= star - 0.5;
+        const id = `half-product-${star}`;
+        return (
+          <svg key={star} width={size} height={size} viewBox="0 0 12 12" fill="none">
+            <defs>
+              <linearGradient id={id} x1="0" x2="1" y1="0" y2="0">
+                <stop offset="50%" stopColor="#f59e0b" />
+                <stop offset="50%" stopColor="transparent" />
+              </linearGradient>
+            </defs>
+            <path
+              d="M6 1l1.236 2.504L10 3.927l-2 1.95.472 2.753L6 7.25 3.528 8.63 4 5.877 2 3.927l2.764-.423L6 1z"
+              fill={filled ? "#f59e0b" : half ? `url(#${id})` : "none"}
+              stroke="#f59e0b"
+              strokeWidth="0.8"
+            />
+          </svg>
+        );
+      })}
+    </div>
+  );
+}
+
+const SELLER_REVIEWS = [
+  { id: "r1", author: "Сергей П.", rating: 5, text: "Всё как описано, доставил быстро. Рекомендую!", date: "3 недели назад" },
+  { id: "r2", author: "Юлия К.", rating: 5, text: "Отличный продавец, вещь в идеальном состоянии.", date: "1 месяц назад" },
+  { id: "r3", author: "Антон В.", rating: 4, text: "Всё хорошо, чуть задержал ответ. Вещь понравилась.", date: "2 месяца назад" },
+];
+
 export default function ProductPage({ product, onBack, onToggleFavorite, onAddToCart }: ProductPageProps) {
   const [messages, setMessages] = useState<Message[]>(MOCK_MESSAGES);
   const [newMsg, setNewMsg] = useState("");
@@ -90,27 +124,42 @@ export default function ProductPage({ product, onBack, onToggleFavorite, onAddTo
             </div>
 
             {/* Seller */}
-            <div className="flex items-center gap-3 p-4 rounded-xl border border-border bg-card">
-              <div className="w-10 h-10 rounded-full bg-secondary border border-border flex items-center justify-center font-bold text-sm">
-                {product.seller.avatar}
-              </div>
-              <div className="flex-1">
-                <p className="font-semibold text-sm">{product.seller.name}</p>
-                <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                  <div className="flex items-center gap-1">
-                    <Icon name="Star" size={11} className="text-amber-400 fill-amber-400" />
-                    <span>{product.seller.rating}</span>
+            <div className="p-4 rounded-xl border border-border bg-card space-y-3">
+              <div className="flex items-center gap-3">
+                <div className="w-11 h-11 rounded-full bg-primary text-primary-foreground flex items-center justify-center font-bold text-base">
+                  {product.seller.avatar}
+                </div>
+                <div className="flex-1">
+                  <p className="font-semibold text-sm">{product.seller.name}</p>
+                  <div className="flex items-center gap-1.5 mt-0.5">
+                    <StarRating rating={product.seller.rating} size={13} />
+                    <span className="text-xs font-semibold text-amber-500">{product.seller.rating}</span>
+                    <span className="text-xs text-muted-foreground">· {product.seller.deals} сделок</span>
                   </div>
-                  <span>·</span>
-                  <span>{product.seller.deals} сделок</span>
-                  <span>·</span>
-                  <div className="flex items-center gap-1">
+                </div>
+                <div className="text-right">
+                  <div className="flex items-center gap-1 text-xs text-muted-foreground justify-end">
                     <Icon name="MapPin" size={11} />
                     <span>{product.location}</span>
                   </div>
+                  <p className="text-xs text-muted-foreground mt-1">{product.createdAt}</p>
                 </div>
               </div>
-              <span className="text-xs text-muted-foreground">{product.createdAt}</span>
+              {/* Rating bar */}
+              <div className="grid grid-cols-5 gap-1 pt-1 border-t border-border">
+                {[
+                  { label: "Точность", val: 98 },
+                  { label: "Скорость", val: 95 },
+                  { label: "Упаковка", val: 100 },
+                  { label: "Связь", val: 92 },
+                  { label: "Повторно", val: 96 },
+                ].map((s) => (
+                  <div key={s.label} className="text-center">
+                    <p className="text-xs font-bold">{s.val}%</p>
+                    <p className="text-[9px] text-muted-foreground leading-tight">{s.label}</p>
+                  </div>
+                ))}
+              </div>
             </div>
 
             {/* Description */}
@@ -136,6 +185,37 @@ export default function ProductPage({ product, onBack, onToggleFavorite, onAddTo
                 Написать
               </button>
             </div>
+          </div>
+        </div>
+
+        {/* Reviews */}
+        <div className="mt-12 mb-4">
+          <div className="flex items-center justify-between mb-5">
+            <h2 className="text-lg font-bold">Отзывы о продавце</h2>
+            <div className="flex items-center gap-2">
+              <StarRating rating={product.seller.rating} size={14} />
+              <span className="font-bold text-sm">{product.seller.rating}</span>
+              <span className="text-sm text-muted-foreground">({product.seller.deals} сделок)</span>
+            </div>
+          </div>
+          <div className="grid md:grid-cols-3 gap-4">
+            {SELLER_REVIEWS.map((review) => (
+              <div key={review.id} className="bg-card border border-border rounded-2xl p-4 space-y-3">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <div className="w-8 h-8 rounded-full bg-secondary border border-border flex items-center justify-center text-xs font-bold">
+                      {review.author[0]}
+                    </div>
+                    <div>
+                      <p className="text-xs font-semibold">{review.author}</p>
+                      <p className="text-[10px] text-muted-foreground">{review.date}</p>
+                    </div>
+                  </div>
+                  <StarRating rating={review.rating} size={11} />
+                </div>
+                <p className="text-sm text-muted-foreground leading-relaxed">{review.text}</p>
+              </div>
+            ))}
           </div>
         </div>
       </div>

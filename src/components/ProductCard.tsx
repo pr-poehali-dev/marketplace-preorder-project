@@ -15,6 +15,35 @@ const CONDITION_STYLES: Record<string, string> = {
   "б/у": "bg-zinc-100 text-zinc-600",
 };
 
+function StarRating({ rating }: { rating: number }) {
+  return (
+    <div className="flex items-center gap-0.5">
+      {[1, 2, 3, 4, 5].map((star) => {
+        const filled = rating >= star;
+        const half = !filled && rating >= star - 0.5;
+        return (
+          <svg key={star} width="11" height="11" viewBox="0 0 12 12" fill="none">
+            <path
+              d="M6 1l1.236 2.504L10 3.927l-2 1.95.472 2.753L6 7.25 3.528 8.63 4 5.877 2 3.927l2.764-.423L6 1z"
+              fill={filled ? "#f59e0b" : half ? "url(#half)" : "none"}
+              stroke="#f59e0b"
+              strokeWidth="0.8"
+            />
+            {half && (
+              <defs>
+                <linearGradient id="half" x1="0" x2="1" y1="0" y2="0">
+                  <stop offset="50%" stopColor="#f59e0b" />
+                  <stop offset="50%" stopColor="transparent" />
+                </linearGradient>
+              </defs>
+            )}
+          </svg>
+        );
+      })}
+    </div>
+  );
+}
+
 export default function ProductCard({ product, onToggleFavorite, onAddToCart, onClick }: ProductCardProps) {
   const discount = product.oldPrice
     ? Math.round(((product.oldPrice - product.price) / product.oldPrice) * 100)
@@ -38,13 +67,15 @@ export default function ProductCard({ product, onToggleFavorite, onAddToCart, on
         )}
         <button
           onClick={(e) => { e.stopPropagation(); onToggleFavorite(product.id); }}
-          className={`absolute top-3 right-3 w-8 h-8 rounded-full flex items-center justify-center transition-all ${
+          className={`absolute top-3 right-3 w-8 h-8 rounded-full flex items-center justify-center transition-all shadow-sm ${
             product.isFavorite
-              ? "bg-white text-red-500 shadow-md"
+              ? "bg-white text-red-500"
               : "bg-white/80 text-muted-foreground opacity-0 group-hover:opacity-100"
           }`}
         >
-          <Icon name={product.isFavorite ? "Heart" : "Heart"} size={15} />
+          <svg width="15" height="15" viewBox="0 0 24 24" fill={product.isFavorite ? "currentColor" : "none"} stroke="currentColor" strokeWidth="2">
+            <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
+          </svg>
         </button>
       </div>
 
@@ -70,17 +101,22 @@ export default function ProductCard({ product, onToggleFavorite, onAddToCart, on
           )}
         </div>
 
+        {/* Seller with star rating */}
         <div className="flex items-center justify-between">
-          <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
-            <div className="w-5 h-5 rounded-full bg-secondary border border-border flex items-center justify-center text-[10px] font-bold">
+          <div className="flex items-center gap-1.5">
+            <div className="w-5 h-5 rounded-full bg-secondary border border-border flex items-center justify-center text-[10px] font-bold shrink-0">
               {product.seller.avatar}
             </div>
-            <span>{product.seller.name}</span>
-            <span>·</span>
-            <Icon name="Star" size={11} className="text-amber-400 fill-amber-400" />
-            <span>{product.seller.rating}</span>
+            <div>
+              <span className="text-xs text-muted-foreground">{product.seller.name}</span>
+              <div className="flex items-center gap-1 mt-0.5">
+                <StarRating rating={product.seller.rating} />
+                <span className="text-[10px] text-muted-foreground font-medium">{product.seller.rating}</span>
+                <span className="text-[10px] text-muted-foreground">· {product.seller.deals} сд.</span>
+              </div>
+            </div>
           </div>
-          <div className="flex items-center gap-1 text-xs text-muted-foreground">
+          <div className="flex items-center gap-0.5 text-xs text-muted-foreground">
             <Icon name="MapPin" size={11} />
             <span>{product.location}</span>
           </div>
