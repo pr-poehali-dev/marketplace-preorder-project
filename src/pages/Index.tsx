@@ -93,6 +93,7 @@ const Index = () => {
               cartItems={cartItems}
               onRemoveFromCart={removeFromCart}
               onProductClick={handleProductClick}
+              onClearCart={() => setCartItems([])}
             />
           )}
           {page === "favorites" && (
