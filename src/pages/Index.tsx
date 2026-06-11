@@ -8,8 +8,9 @@ import CartPage from "@/pages/CartPage";
 import FavoritesPage from "@/pages/FavoritesPage";
 import MyItemsPage from "@/pages/MyItemsPage";
 import ProfilePage from "@/pages/ProfilePage";
+import ChatsPage from "@/pages/ChatsPage";
 
-type Page = "home" | "catalog" | "profile" | "my-items" | "cart" | "favorites";
+type Page = "home" | "catalog" | "profile" | "my-items" | "cart" | "favorites" | "chats";
 
 const Index = () => {
   const [page, setPage] = useState<Page>("home");
@@ -58,6 +59,7 @@ const Index = () => {
         onNavigate={navigate}
         cartCount={cartItems.length}
         favCount={favorites.length}
+        unreadChats={1}
       />
 
       {selectedProduct ? (
@@ -104,6 +106,7 @@ const Index = () => {
           {page === "my-items" && (
             <MyItemsPage onProductClick={handleProductClick} />
           )}
+          {page === "chats" && <ChatsPage />}
           {page === "profile" && <ProfilePage />}
         </>
       )}

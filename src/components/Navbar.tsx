@@ -1,22 +1,30 @@
 import Icon from "@/components/ui/icon";
 
-type Page = "home" | "catalog" | "profile" | "my-items" | "cart" | "favorites";
+type Page = "home" | "catalog" | "profile" | "my-items" | "cart" | "favorites" | "chats";
 
 interface NavbarProps {
   currentPage: Page;
   onNavigate: (page: Page) => void;
   cartCount: number;
   favCount: number;
+  unreadChats?: number;
 }
 
-export default function Navbar({ currentPage, onNavigate, cartCount, favCount }: NavbarProps) {
-  const navItems: { id: Page; label: string; icon: string }[] = [
+export default function Navbar({ currentPage, onNavigate, cartCount, favCount, unreadChats = 1 }: NavbarProps) {
+  // Mobile bottom nav — 5 главных вкладок
+  const mobileNav: { id: Page; label: string; icon: string }[] = [
     { id: "home", label: "Главная", icon: "Home" },
     { id: "catalog", label: "Каталог", icon: "LayoutGrid" },
-    { id: "favorites", label: "Избранное", icon: "Heart" },
-    { id: "cart", label: "Корзина", icon: "ShoppingBag" },
+    { id: "chats", label: "Чаты", icon: "MessageCircle" },
+    { id: "my-items", label: "Объявления", icon: "Package" },
     { id: "profile", label: "Профиль", icon: "User" },
   ];
+
+  const badges: Partial<Record<Page, number>> = {
+    cart: cartCount,
+    favorites: favCount,
+    chats: unreadChats,
+  };
 
   return (
     <>
@@ -30,23 +38,33 @@ export default function Navbar({ currentPage, onNavigate, cartCount, favCount }:
             вещи
           </button>
 
+          {/* Center nav */}
           <nav className="flex items-center gap-1">
-            {navItems.slice(0, 3).map((item) => (
-              <button
-                key={item.id}
-                onClick={() => onNavigate(item.id)}
-                className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
-                  currentPage === item.id
-                    ? "bg-primary text-primary-foreground"
-                    : "text-muted-foreground hover:text-foreground hover:bg-secondary"
-                }`}
-              >
-                {item.label}
-              </button>
-            ))}
+            {(["home", "catalog", "chats", "my-items"] as Page[]).map((id) => {
+              const labels: Record<string, string> = { home: "Главная", catalog: "Каталог", chats: "Чаты", "my-items": "Мои объявления" };
+              return (
+                <button
+                  key={id}
+                  onClick={() => onNavigate(id)}
+                  className={`relative px-4 py-2 rounded-lg text-sm font-medium transition-all ${
+                    currentPage === id
+                      ? "bg-primary text-primary-foreground"
+                      : "text-muted-foreground hover:text-foreground hover:bg-secondary"
+                  }`}
+                >
+                  {labels[id]}
+                  {badges[id] ? (
+                    <span className="absolute -top-1 -right-1 w-4 h-4 bg-accent text-white text-[9px] font-bold rounded-full flex items-center justify-center">
+                      {badges[id]}
+                    </span>
+                  ) : null}
+                </button>
+              );
+            })}
           </nav>
 
-          <div className="flex items-center gap-2">
+          {/* Right icons */}
+          <div className="flex items-center gap-1">
             <button
               onClick={() => onNavigate("favorites")}
               className={`relative p-2.5 rounded-lg transition-all ${
@@ -72,16 +90,6 @@ export default function Navbar({ currentPage, onNavigate, cartCount, favCount }:
                   {cartCount}
                 </span>
               )}
-            </button>
-            <button
-              onClick={() => onNavigate("my-items")}
-              className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
-                currentPage === "my-items"
-                  ? "bg-primary text-primary-foreground"
-                  : "text-muted-foreground hover:text-foreground hover:bg-secondary"
-              }`}
-            >
-              Мои товары
             </button>
             <button
               onClick={() => onNavigate("profile")}
@@ -131,7 +139,7 @@ export default function Navbar({ currentPage, onNavigate, cartCount, favCount }:
       {/* Mobile bottom nav */}
       <nav className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-background border-t border-border">
         <div className="flex">
-          {navItems.map((item) => (
+          {mobileNav.map((item) => (
             <button
               key={item.id}
               onClick={() => onNavigate(item.id)}
@@ -141,16 +149,11 @@ export default function Navbar({ currentPage, onNavigate, cartCount, favCount }:
             >
               <div className="relative">
                 <Icon name={item.icon} size={22} />
-                {item.id === "cart" && cartCount > 0 && (
+                {badges[item.id] ? (
                   <span className="absolute -top-1.5 -right-1.5 w-3.5 h-3.5 bg-accent text-white text-[9px] font-bold rounded-full flex items-center justify-center">
-                    {cartCount}
+                    {badges[item.id]}
                   </span>
-                )}
-                {item.id === "favorites" && favCount > 0 && (
-                  <span className="absolute -top-1.5 -right-1.5 w-3.5 h-3.5 bg-accent text-white text-[9px] font-bold rounded-full flex items-center justify-center">
-                    {favCount}
-                  </span>
-                )}
+                ) : null}
               </div>
               <span className="text-[10px] font-medium leading-none">{item.label}</span>
             </button>
