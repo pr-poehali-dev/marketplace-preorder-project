@@ -1,119 +1,17 @@
-import { useState } from "react";
-import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
-import { MOCK_PRODUCTS, Product } from "@/data/mockData";
-import Navbar from "@/components/Navbar";
-import HomePage from "@/pages/HomePage";
-import CatalogPage from "@/pages/CatalogPage";
-import ProductPage from "@/pages/ProductPage";
-import CartPage from "@/pages/CartPage";
-import FavoritesPage from "@/pages/FavoritesPage";
-import MyItemsPage from "@/pages/MyItemsPage";
-import ProfilePage from "@/pages/ProfilePage";
-
-type Page = "home" | "catalog" | "profile" | "my-items" | "cart" | "favorites";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
+import Index from "./pages/Index";
+import NotFound from "./pages/NotFound";
 
 export default function App() {
-  const [page, setPage] = useState<Page>("home");
-  const [products, setProducts] = useState<Product[]>(MOCK_PRODUCTS);
-  const [cartItems, setCartItems] = useState<Product[]>([MOCK_PRODUCTS[2]]);
-  const [selectedProductId, setSelectedProductId] = useState<string | null>(null);
-
-  const favorites = products.filter((p) => p.isFavorite);
-
-  const toggleFavorite = (id: string) => {
-    setProducts((prev) =>
-      prev.map((p) => (p.id === id ? { ...p, isFavorite: !p.isFavorite } : p))
-    );
-  };
-
-  const addToCart = (id: string) => {
-    const product = products.find((p) => p.id === id);
-    if (product && !cartItems.find((c) => c.id === id)) {
-      setCartItems((prev) => [...prev, product]);
-    }
-  };
-
-  const removeFromCart = (id: string) => {
-    setCartItems((prev) => prev.filter((p) => p.id !== id));
-  };
-
-  const handleProductClick = (id: string) => {
-    setSelectedProductId(id);
-  };
-
-  const handleBack = () => {
-    setSelectedProductId(null);
-  };
-
-  const navigate = (p: Page) => {
-    setSelectedProductId(null);
-    setPage(p);
-  };
-
-  const selectedProduct = selectedProductId
-    ? products.find((p) => p.id === selectedProductId)
-    : null;
-
   return (
     <TooltipProvider>
-      <Toaster />
-      <div className="min-h-screen bg-background">
-        <Navbar
-          currentPage={page}
-          onNavigate={navigate}
-          cartCount={cartItems.length}
-          favCount={favorites.length}
-        />
-
-        {selectedProduct ? (
-          <ProductPage
-            product={selectedProduct}
-            onBack={handleBack}
-            onToggleFavorite={toggleFavorite}
-            onAddToCart={addToCart}
-          />
-        ) : (
-          <>
-            {page === "home" && (
-              <HomePage
-                products={products}
-                onToggleFavorite={toggleFavorite}
-                onAddToCart={addToCart}
-                onProductClick={handleProductClick}
-                onNavigateCatalog={() => navigate("catalog")}
-              />
-            )}
-            {page === "catalog" && (
-              <CatalogPage
-                products={products}
-                onToggleFavorite={toggleFavorite}
-                onAddToCart={addToCart}
-                onProductClick={handleProductClick}
-              />
-            )}
-            {page === "cart" && (
-              <CartPage
-                cartItems={cartItems}
-                onRemoveFromCart={removeFromCart}
-                onProductClick={handleProductClick}
-              />
-            )}
-            {page === "favorites" && (
-              <FavoritesPage
-                favorites={favorites}
-                onToggleFavorite={toggleFavorite}
-                onAddToCart={addToCart}
-                onProductClick={handleProductClick}
-              />
-            )}
-            {page === "my-items" && (
-              <MyItemsPage onProductClick={handleProductClick} />
-            )}
-            {page === "profile" && <ProfilePage />}
-          </>
-        )}
-      </div>
+      <BrowserRouter>
+        <Routes>
+          <Route path="/" element={<Index />} />
+          <Route path="*" element={<NotFound />} />
+        </Routes>
+      </BrowserRouter>
     </TooltipProvider>
   );
 }
